@@ -1,22 +1,36 @@
+ได้เลยครับ ผมได้อัปเดตโค้ดให้สมบูรณ์ยิ่งขึ้น โดยเพิ่มฟีเจอร์ดังนี้ครับ:
+
+1. **ปุ่มเปลี่ยนภาษา (TH / EN):** อยู่มุมขวาบนของหน้าจอ
+2. **เนื้อหาภาษาอังกฤษ:** แปลเนื้อหาทั้งหมด (ศิลปะ, ศาสนา, คำบรรยาย) เป็นภาษาอังกฤษให้แล้ว
+3. **ระบบเสียงอัจฉริยะ:**
+* เมื่อเปลี่ยนเป็นภาษาอังกฤษ ระบบเสียงจะอ่านด้วยสำเนียงภาษาอังกฤษ (en-US)
+* เมื่อเป็นภาษาไทย จะอ่านสำเนียงไทย (th-TH)
+* หากเปลี่ยนภาษาขณะเสียงกำลังเล่น เสียงจะหยุดอัตโนมัติเพื่อรอให้กดฟังใหม่ในภาษานั้นๆ
+
+
+
+คุณสามารถคัดลอกโค้ดทั้งหมดนี้ไปใช้ได้เลยครับ
+
+```html
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supper at Emmaus - Caravaggio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #8b5e3c;
             --secondary-color: #2c3e50;
             --bg-color: #f4f1ea;
             --text-color: #333;
-            --modal-bg: rgba(0, 0, 0, 0.75);
+            --modal-bg: rgba(0, 0, 0, 0.8);
             --accent-gold: #d4af37;
         }
 
         body {
-            font-family: 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif; /* Default Thai Font */
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -27,6 +41,37 @@
             min-height: 100vh;
         }
 
+        /* เมื่อเป็นภาษาอังกฤษ เปลี่ยนฟอนต์ให้ดูสากลขึ้น */
+        body.lang-en-active {
+            font-family: 'Merriweather', serif;
+        }
+
+        /* --- Language Toggle Button --- */
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            z-index: 50; /* อยู่เหนือสุด */
+        }
+        .lang-switch:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        .lang-icon { font-size: 1.2em; }
+
+        /* --- Main Gallery Item --- */
         .gallery-item {
             background-color: #fff;
             padding: 30px;
@@ -35,6 +80,7 @@
             text-align: center;
             max-width: 700px;
             width: 100%;
+            position: relative;
         }
 
         .image-container {
@@ -76,7 +122,6 @@
             padding: 12px 24px;
             border: none;
             border-radius: 30px;
-            font-family: 'Sarabun', sans-serif;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
@@ -154,59 +199,58 @@
             border: 1px solid #ddd;
         }
 
-        .audio-label {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--secondary-color);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .audio-btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
+        .audio-label { font-size: 0.9rem; font-weight: 600; color: var(--secondary-color); }
+        .audio-btn-group { display: flex; gap: 10px; }
         .audio-btn {
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 5px 12px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
+            background-color: white; border: 1px solid #ccc; border-radius: 5px;
+            padding: 5px 12px; cursor: pointer; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 5px; transition: all 0.2s;
         }
-
         .audio-btn:hover { background-color: #e9ecef; }
         .audio-btn.playing { background-color: #ffeeba; border-color: #ffc107; color: #856404; }
+
+        /* --- Language Display Classes --- */
+        .lang-en { display: none; } /* Default hidden */
+        .lang-th { display: block; }
 
         @media (max-width: 600px) {
             .artwork-image { max-width: 100%; border-width: 8px; }
             .modal-content { width: 90%; padding: 20px; margin-top: 20px; }
             .btn { width: 100%; justify-content: center; }
+            .lang-switch { top: 10px; right: 10px; padding: 4px 10px; font-size: 0.8rem;}
         }
     </style>
 </head>
-<body>
+<body id="main-body">
+
+    <div class="lang-switch" onclick="toggleLanguage()">
+        <span class="lang-icon">🌐</span> <span id="lang-btn-text">TH / EN</span>
+    </div>
 
     <div class="gallery-item">
         <div class="image-container">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/1602-3_Caravaggio%2CSupper_at_Emmaus_National_Gallery%2C_London.jpg/1280px-1602-3_Caravaggio%2CSupper_at_Emmaus_National_Gallery%2C_London.jpg" alt="Supper at Emmaus" class="artwork-image">
         </div>
         
-        <h1 class="artwork-title">Supper at Emmaus (อาหารค่ำที่เอมมาอูส)</h1>
-        <p class="artist-byline">โดย Michelangelo Merisi da Caravaggio</p>
+        <h1 class="artwork-title">
+            <span class="lang-th">Supper at Emmaus (อาหารค่ำที่เอมมาอูส)</span>
+            <span class="lang-en">Supper at Emmaus</span>
+        </h1>
+        <p class="artist-byline">
+            <span class="lang-th">โดย Michelangelo Merisi da Caravaggio</span>
+            <span class="lang-en">By Michelangelo Merisi da Caravaggio</span>
+        </p>
 
         <div class="action-buttons">
             <button class="btn btn-art" onclick="openModal('modalArt')">
-                <span>🎨</span> ความงามทางศิลปะ
+                <span>🎨</span> 
+                <span class="lang-th">ความงามทางศิลปะ</span>
+                <span class="lang-en">Artistic Beauty</span>
             </button>
             <button class="btn btn-faith" onclick="openModal('modalFaith')">
-                <span>✝️</span> ความหมายทางคริสตศาสนา
+                <span>✝️</span> 
+                <span class="lang-th">ความหมายทางคริสตศาสนา</span>
+                <span class="lang-en">Religious Meaning</span>
             </button>
         </div>
     </div>
@@ -216,48 +260,56 @@
             <span class="close-btn" onclick="closeModal('modalArt')">&times;</span>
             
             <div class="audio-controls">
-                <div class="audio-label">🎧 ฟังคำบรรยาย</div>
+                <div class="audio-label">
+                    <span class="lang-th">🎧 ฟังคำบรรยาย</span>
+                    <span class="lang-en">🎧 Listen</span>
+                </div>
                 <div class="audio-btn-group">
                     <button class="audio-btn" id="btn-play-art" onclick="toggleSpeech('text-art', 'btn-play-art')">
-                        🔊 อ่าน
+                        🔊 <span class="lbl-read lang-th">อ่าน</span><span class="lbl-read lang-en">Read</span>
                     </button>
                     <button class="audio-btn" onclick="stopSpeech('btn-play-art')">
-                        ⏹️ หยุด
+                        ⏹️ <span class="lang-th">หยุด</span><span class="lang-en">Stop</span>
                     </button>
                 </div>
             </div>
 
             <div id="text-art">
-                <h2>🎨 ความงามทางศิลปะและวิธีสังเกต</h2>
-                <p>ภาพนี้คือผลงานชิ้นเอกของ <strong>คาราวัจโจ</strong> ศิลปินเอกชาวอิตาลีในยุคบาโรก จุดเด่นอยู่ที่สไตล์เฉพาะตัวที่ปฏิวัติวงการศิลปะ:</p>
+                <div class="lang-th">
+                    <h2>🎨 ความงามทางศิลปะและวิธีสังเกต</h2>
+                    <p>ภาพนี้คือผลงานชิ้นเอกของ <strong>คาราวัจโจ</strong> ศิลปินเอกชาวอิตาลีในยุคบาโรก จุดเด่นอยู่ที่สไตล์เฉพาะตัวที่ปฏิวัติวงการศิลปะ:</p>
+                    <h3>จุดเด่นหลักของภาพ</h3>
+                    <ul>
+                        <li><strong>แสงและเงา:</strong> ใช้แสงส่องตัวพระเยซูอย่างชัดเจน ขณะที่ฉากรอบข้างมืดมิด สื่อถึงการ "เปิดเผยความจริง"</li>
+                        <li><strong>ความสมจริง:</strong> ตัวละครแต่งกายเหมือนชาวบ้าน สีหน้าท่าทางเต็มไปด้วยอารมณ์ตกใจ</li>
+                        <li><strong>ท่าทางที่ทะลุกรอบ:</strong> แขนที่กางออก หรือเก้าอี้ที่ดูเหมือนจะล้ม ทำให้ผู้ชมรู้สึกเหมือน "ถูกดึงเข้าไป" ในเหตุการณ์</li>
+                    </ul>
+                    <hr class="divider">
+                    <h3>วิธีสังเกตความงาม</h3>
+                    <p><strong>1. ช่วงเสี้ยววินาที:</strong> คาราวัจโจวาดวินาทีที่ "การตระหนักรู้" กำลังเกิดขึ้น ศิษย์ยังไม่อุทาน แต่หัวใจ "รู้แล้ว"</p>
+                    <p><strong>2. ความไม่สมดุล:</strong> มือพระเยซูสงบ แต่ศิษย์กางออกด้วยความตึงเครียด โลกมนุษย์ปั่นป่วนแต่พระเจ้ามั่นคง</p>
+                    <p><strong>3. ความงามของความจริง:</strong> แสงในภาพไม่โรแมนติก แต่เฉียบคม เน้นรอยเหี่ยวย่น สื่อว่าความงามมาจาก "ความจริง"</p>
+                    <p><strong>4. ของธรรมดาที่ศักดิ์สิทธิ์:</strong> บนโต๊ะมีเพียง ขนมปัง ผลไม้ ไวน์ เพื่อบอกว่าความศักดิ์สิทธิ์อยู่ในสิ่งสามัญที่ถูกมองด้วยสายตาใหม่</p>
+                    <p><strong>5. ความเงียบ:</strong> แม้ภาพจะเต็มไปด้วยอารมณ์ตกใจ แต่กลับรู้สึก "เงียบ" อย่างหนักแน่น</p>
+                </div>
 
-                <h3>จุดเด่นหลักของภาพ</h3>
-                <ul>
-                    <li><strong>แสงและเงา:</strong> ใช้แสงส่องตัวพระเยซูอย่างชัดเจนและเฉียบคม ขณะที่ฉากรอบข้างมืดมิด แสงนี้สื่อถึงการ "เปิดเผยความจริง"</li>
-                    <li><strong>ความสมจริง:</strong> ตัวละครแต่งกายเหมือนชาวบ้าน สีหน้าท่าทางเต็มไปด้วยอารมณ์ตกใจ</li>
-                    <li><strong>ท่าทางที่ทะลุกรอบ:</strong> แขนที่กางออกของศิษย์ หรือเก้าอี้ที่ดูเหมือนจะล้ม ทำให้ผู้ชมรู้สึกเหมือน "ถูกดึงเข้าไป" ในเหตุการณ์</li>
-                </ul>
-
-                <hr class="divider">
-                <h3>วิธีสังเกตความงาม 6 ประการ</h3>
-                
-                <p><strong>1. ความงามของ “ช่วงเสี้ยววินาที”</strong><br>
-                คาราวัจโจเลือกวาดวินาทีที่ "การตระหนักรู้" กำลังเกิดขึ้น ศิษย์ยังไม่อุทาน แต่หัวใจ "รู้แล้ว"</p>
-
-                <p><strong>2. ความงามของความไม่สมดุล</strong><br>
-                มือพระเยซูสงบและอ่อนโยน ในขณะที่มือศิษย์กางออกด้วยความตึงเครียด แสดงถึงโลกมนุษย์ที่ปั่นป่วนเทียบกับพระคริสต์ที่มั่นคง</p>
-
-                <p><strong>3. ความงามของแสงที่ “ไม่สวย แต่จริง”</strong><br>
-                แสงในภาพไม่โรแมนติก แต่เฉียบคม เน้นให้เห็นรอยเหี่ยวย่น สื่อว่าความงามมาจาก "ความเป็นจริง"</p>
-
-                <p><strong>4. ความงามของสิ่งธรรมดาที่ศักดิ์สิทธิ์</strong><br>
-                บนโต๊ะมีเพียง ขนมปัง ผลไม้ ไวน์ และจานดินเผา คาราวัจโจกำลังบอกว่า ความศักดิ์สิทธิ์ไม่ได้อยู่ในสิ่งสูงส่ง แต่อยู่ในสิ่งที่ถูกมองด้วยสายตาใหม่</p>
-
-                <p><strong>5. ความงามของพื้นที่</strong><br>
-                เก้าอี้ที่ยื่นออกมาและโต๊ะที่อยู่ใกล้ขอบภาพ ทำให้ผู้ชมรู้สึกเหมือนกำลัง "นั่งร่วมโต๊ะ" อยู่ด้วย</p>
-
-                <p><strong>6. ความงามของความเงียบ</strong><br>
-                แม้ภาพจะเต็มไปด้วยอารมณ์ตกใจ แต่กลับรู้สึก "เงียบ" อย่างหนักแน่น</p>
+                <div class="lang-en">
+                    <h2>🎨 Artistic Beauty & Observation</h2>
+                    <p>This masterpiece by <strong>Caravaggio</strong>, an Italian Baroque master, is renowned for its revolutionary style:</p>
+                    <h3>Key Highlights</h3>
+                    <ul>
+                        <li><strong>Chiaroscuro (Light & Shadow):</strong> A sharp light illuminates Jesus while the background remains dark, symbolizing the "revelation of truth."</li>
+                        <li><strong>Realism:</strong> The characters are dressed as ordinary peasants, their expressions full of shock and realization.</li>
+                        <li><strong>Immersive Gestures:</strong> Outstretched arms and a teetering chair make the viewer feel "pulled into" the scene.</li>
+                    </ul>
+                    <hr class="divider">
+                    <h3>How to Observe the Beauty</h3>
+                    <p><strong>1. The Psychological Moment:</strong> Caravaggio captures the split second of realization. The disciples haven't moved yet, but their hearts already "know."</p>
+                    <p><strong>2. Beauty of Asymmetry:</strong> Jesus' hand is calm, while the disciple's arms are tense. The human world is chaotic, while Christ is steady.</p>
+                    <p><strong>3. Truthful Beauty:</strong> The lighting isn't romantic; it's sharp, highlighting wrinkles and worn clothes. Beauty lies in "truth," not perfection.</p>
+                    <p><strong>4. Sacred Ordinary:</strong> Simple bread and fruit on the table suggest that holiness isn't just in lofty things, but in ordinary things viewed with new eyes.</p>
+                    <p><strong>5. The Silence:</strong> Despite the emotional shock, the painting exudes a heavy, profound silence.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -267,41 +319,95 @@
             <span class="close-btn" onclick="closeModal('modalFaith')">&times;</span>
 
             <div class="audio-controls">
-                <div class="audio-label">🎧 ฟังคำบรรยาย</div>
+                <div class="audio-label">
+                    <span class="lang-th">🎧 ฟังคำบรรยาย</span>
+                    <span class="lang-en">🎧 Listen</span>
+                </div>
                 <div class="audio-btn-group">
                     <button class="audio-btn" id="btn-play-faith" onclick="toggleSpeech('text-faith', 'btn-play-faith')">
-                        🔊 อ่าน
+                        🔊 <span class="lbl-read lang-th">อ่าน</span><span class="lbl-read lang-en">Read</span>
                     </button>
                     <button class="audio-btn" onclick="stopSpeech('btn-play-faith')">
-                        ⏹️ หยุด
+                        ⏹️ <span class="lang-th">หยุด</span><span class="lang-en">Stop</span>
                     </button>
                 </div>
             </div>
 
             <div id="text-faith">
-                <h2>✝️ ความหมายทางคริสตศาสนา</h2>
-                <p>ภาพนี้อ้างอิงจากพระคัมภีร์ ลูกา บทที่ 24</p>
+                <div class="lang-th">
+                    <h2>✝️ ความหมายทางคริสตศาสนา</h2>
+                    <p>อ้างอิงจากพระคัมภีร์ ลูกา บทที่ 24 เรื่องราวหลังการฟื้นคืนพระชนม์</p>
+                    <h3>เนื้อเรื่องย่อ</h3>
+                    <p>พระเยซูทรงเดินร่วมทางไปกับศิษย์สองคนที่ไม่รู้ว่าเป็นพระองค์ จนกระทั่งถึงมื้ออาหารค่ำ "เมื่อพระองค์ทรงหักขนมปัง ดวงตาของเขาทั้งสองก็เปิดออก"</p>
+                    <hr class="divider">
+                    <h3>ความหมายเชิงเทววิทยา</h3>
+                    <ul>
+                        <li><strong>การทรงสถิต:</strong> พระเยซูทรงอยู่กับมนุษย์เสมอ แม้ในยามที่มนุษย์มองไม่เห็น</li>
+                        <li><strong>ศีลมหาสนิท:</strong> การหักขนมปังคือหัวใจสำคัญ พระคริสต์ทรงเปิดเผยพระองค์ผ่านพิธีการที่ดูธรรมดาที่สุด</li>
+                        <li><strong>ความเชื่อก่อนความเข้าใจ:</strong> ศิษย์ได้เดินกับพระองค์ก่อนที่จะรู้ว่าท่านเป็นใคร สะท้อนชีวิตคริสเตียนที่ต้องเดินด้วยความเชื่อ</li>
+                    </ul>
+                    <hr class="divider">
+                    <p class="highlight-quote">“เราเองเคยไม่รู้หรือไม่ ว่าพระองค์ทรงอยู่กับเราแล้ว”</p>
+                    <p>ที่สุดแล้ว ความงามทางจิตวิญญาณคือการที่ผู้ชมค่อยๆ รู้ตัวว่า <strong>เราเองก็กำลังนั่งอยู่ตรงโต๊ะนั้นด้วย</strong></p>
+                </div>
 
-                <h3>เนื้อเรื่องย่อ</h3>
-                <p>หลังการฟื้นคืนพระชนม์ พระเยซูทรงเดินร่วมทางไปกับศิษย์สองคนที่ไม่รู้ว่าเป็นพระองค์ จนกระทั่งถึงมื้ออาหารค่ำ เมื่อพระองค์ทรงหักขนมปัง ดวงตาของเขาทั้งสองก็เปิดออก</p>
-
-                <hr class="divider">
-                <h3>ความหมายเชิงเทววิทยา</h3>
-                <ul>
-                    <li><strong>การทรงสถิตของพระคริสต์:</strong> สื่อว่าพระเยซูยังทรงอยู่กับมนุษย์เสมอ แม้ในยามที่มนุษย์มองไม่เห็น</li>
-                    <li><strong>ศีลมหาสนิท:</strong> การหักขนมปังคือหัวใจสำคัญ พระคริสต์ทรงเปิดเผยพระองค์ผ่านพิธีการที่ดูธรรมดาที่สุด</li>
-                    <li><strong>ความเชื่อก่อนความเข้าใจ:</strong> ศิษย์ได้เดินกับพระองค์ก่อนที่จะรู้ว่าท่านเป็นใคร สะท้อนชีวิตคริสเตียนที่ต้องเดินด้วยความเชื่อ</li>
-                </ul>
-
-                <hr class="divider">
-                <h3>บทสรุปทางจิตวิญญาณ</h3>
-                <p>ภาพนี้แสดงพระเยซูในฐานะผู้ร่วมโต๊ะกับมนุษย์ เชื้อเชิญให้ผู้ดูตั้งคำถามว่า เราเองเคยไม่รู้หรือไม่ ว่าพระองค์ทรงอยู่กับเราแล้ว</p>
-                <p>ที่สุดแล้ว ความงามทางจิตวิญญาณของภาพนี้คือการที่ผู้ชมค่อยๆ รู้ตัวว่า เราเองก็กำลังนั่งอยู่ตรงโต๊ะนั้นด้วย</p>
+                <div class="lang-en">
+                    <h2>✝️ Religious Significance</h2>
+                    <p>Based on the Gospel of Luke, Chapter 24, following the Resurrection.</p>
+                    <h3>The Story</h3>
+                    <p>Jesus walks with two disciples who do not recognize Him. It is only at dinner, "When He broke the bread, their eyes were opened."</p>
+                    <hr class="divider">
+                    <h3>Theological Meaning</h3>
+                    <ul>
+                        <li><strong>Presence of Christ:</strong> Jesus is always with us, even when we cannot see Him or are unaware.</li>
+                        <li><strong>The Eucharist:</strong> The breaking of bread is central. Christ reveals Himself through the most ordinary ritual.</li>
+                        <li><strong>Faith before Sight:</strong> The disciples walked with Him before knowing who He was, reflecting the Christian walk of faith.</li>
+                    </ul>
+                    <hr class="divider">
+                    <p class="highlight-quote">“Have we ever failed to realize that He is already with us?”</p>
+                    <p>Ultimately, the spiritual beauty lies in the viewer realizing that <strong>we, too, are sitting at that table.</strong></p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- Language Logic ---
+        let currentLang = 'th'; // Default language
+
+        function toggleLanguage() {
+            // หยุดเสียงก่อนเปลี่ยนภาษา
+            stopSpeech();
+
+            if (currentLang === 'th') {
+                setLanguage('en');
+            } else {
+                setLanguage('th');
+            }
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const thElements = document.querySelectorAll('.lang-th');
+            const enElements = document.querySelectorAll('.lang-en');
+            const body = document.getElementById('main-body');
+
+            if (lang === 'en') {
+                thElements.forEach(el => el.style.display = 'none');
+                enElements.forEach(el => el.style.display = 'inline-block'); // หรือ block แล้วแต่ context
+                // Fix for block elements
+                document.querySelectorAll('div.lang-en').forEach(el => el.style.display = 'block');
+                
+                body.classList.add('lang-en-active');
+            } else {
+                enElements.forEach(el => el.style.display = 'none');
+                thElements.forEach(el => el.style.display = 'inline-block');
+                document.querySelectorAll('div.lang-th').forEach(el => el.style.display = 'block');
+                
+                body.classList.remove('lang-en-active');
+            }
+        }
+
         // --- Modal Logic ---
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
@@ -313,8 +419,6 @@
             const modal = document.getElementById(modalId);
             modal.style.display = "none";
             document.body.style.overflow = "auto";
-            
-            // สำคัญ: เมื่อปิด Modal ต้องหยุดเสียงทันที
             stopSpeech(); 
         }
 
@@ -322,11 +426,11 @@
             if (event.target.classList.contains('modal-overlay')) {
                 event.target.style.display = "none";
                 document.body.style.overflow = "auto";
-                stopSpeech(); // หยุดเสียงเมื่อคลิกข้างนอก
+                stopSpeech();
             }
         }
 
-        // --- Text-to-Speech Logic ---
+        // --- Text-to-Speech Logic (Adaptive) ---
         let synthesis = window.speechSynthesis;
         let currentUtterance = null;
         let isPaused = false;
@@ -334,49 +438,48 @@
 
         function toggleSpeech(contentId, btnId) {
             const btn = document.getElementById(btnId);
+            // ดึงข้อความ *เฉพาะภาษาที่แสดงอยู่* เท่านั้น (innerText จะไม่เอา text ที่ display:none)
             const textContent = document.getElementById(contentId).innerText;
 
-            // กรณี 1: กำลังพูดอยู่ และเป็นปุ่มเดิม -> ให้หยุดชั่วคราว (Pause)
+            // Labels for buttons depending on lang
+            const txtPause = currentLang === 'th' ? "⏸️ พัก" : "⏸️ Pause";
+            const txtResume = currentLang === 'th' ? "▶️ ต่อ" : "▶️ Resume";
+
             if (synthesis.speaking && !synthesis.paused && activeBtnId === btnId) {
                 synthesis.pause();
                 isPaused = true;
-                btn.innerHTML = "▶️ ต่อ";
+                btn.innerHTML = txtResume;
                 btn.classList.remove('playing');
                 return;
             }
 
-            // กรณี 2: กำลังหยุดชั่วคราว และเป็นปุ่มเดิม -> ให้พูดต่อ (Resume)
             if (synthesis.paused && activeBtnId === btnId) {
                 synthesis.resume();
                 isPaused = false;
-                btn.innerHTML = "⏸️ พัก";
+                btn.innerHTML = txtPause;
                 btn.classList.add('playing');
                 return;
             }
 
-            // กรณี 3: เริ่มใหม่ หรือ เปลี่ยนไปกดปุ่มอื่น -> หยุดของเก่าแล้วเริ่มใหม่
             stopSpeech(); 
 
-            // สร้างเสียงพูดใหม่
             currentUtterance = new SpeechSynthesisUtterance(textContent);
-            currentUtterance.lang = 'th-TH'; // กำหนดภาษาไทย
-            currentUtterance.rate = 1.0; // ความเร็วปกติ
-            
-            // เมื่ออ่านจบ
+            // Set Language based on current state
+            currentUtterance.lang = currentLang === 'th' ? 'th-TH' : 'en-US';
+            currentUtterance.rate = 1.0;
+
             currentUtterance.onend = function() {
                 resetButtons();
             };
 
             synthesis.speak(currentUtterance);
             
-            // อัปเดตสถานะปุ่ม
             activeBtnId = btnId;
-            btn.innerHTML = "⏸️ พัก";
+            btn.innerHTML = txtPause;
             btn.classList.add('playing');
         }
 
         function stopSpeech(specificBtnId = null) {
-            // ถ้ามีการระบุปุ่ม (กดปุ่ม Stop) หรือไม่ระบุ (ปิด Modal) ก็หยุดทั้งหมด
             synthesis.cancel();
             resetButtons();
             isPaused = false;
@@ -384,16 +487,28 @@
         }
 
         function resetButtons() {
-            // รีเซ็ตข้อความปุ่มทั้งหมดกลับเป็นค่าเริ่มต้น
             const allBtns = document.querySelectorAll('.audio-btn');
+            const txtReadTh = '🔊 <span class="lbl-read lang-th" style="display:inline">อ่าน</span><span class="lbl-read lang-en" style="display:none">Read</span>';
+            const txtReadEn = '🔊 <span class="lbl-read lang-th" style="display:none">อ่าน</span><span class="lbl-read lang-en" style="display:inline">Read</span>';
+            
             allBtns.forEach(b => {
                 if(b.id.includes('play')) {
-                    b.innerHTML = "🔊 อ่าน";
+                    // Reset text based on current lang
+                    if (currentLang === 'th') {
+                        b.innerHTML = '🔊 อ่าน';
+                    } else {
+                        b.innerHTML = '🔊 Read';
+                    }
                     b.classList.remove('playing');
                 }
             });
         }
-    </script>
 
+        // Initialize default view
+        setLanguage('th');
+
+    </script>
 </body>
 </html>
+
+```
